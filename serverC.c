@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#define UDPPORT "21798" // the port client will be connecting to
+#define UDPPORT "23798" // the port client will be connecting to
 #define CLIENTTCPPORT "25798"
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 #define MAXBUFLEN 100
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     int max = 50;
     int costArray[5];
     int cost = 0;
-    costArray[0] = 0;
+    costArray[0] = 2;
     socklen_t addr_len;
 
 
@@ -45,12 +45,12 @@ int main(int argc, char *argv[])
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    printf("The Server A is up and running.\n");
+    printf("The Server C is up and running.\n");
 
     // read file
-    printf("The Server A has the following neighbor information:\n");
+    printf("The Server C has the following neighbor information:\n");
     printf("Neighbor----Cost\n");
-    if((fp = fopen("/Users/zonghanchang/Documents/doc/course/EE450/socket/src/serverA.txt", "r")) == NULL){
+    if((fp = fopen("/Users/zonghanchang/Documents/doc/course/EE450/socket/src/serverC.txt", "r")) == NULL){
         printf("error");
         return 1;
     }
@@ -115,14 +115,14 @@ int main(int argc, char *argv[])
     struct sockaddr client_addr;
     socklen_t client_addrlen = sizeof client_addr;
     getpeername(sockfd,&client_addr,&client_addrlen);
-    printf("The Server A finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+    printf("The Server C finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
 
     struct sockaddr local_addr;
     socklen_t local_addrlen = sizeof local_addr;
     getsockname(sockfd,&local_addr,&local_addrlen);
     char l[INET6_ADDRSTRLEN];
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with Client, the server A has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
+    printf("For this connection with Client, the server C has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
     // UDP
     memset(&hints, 0, sizeof hints);
@@ -162,21 +162,23 @@ int main(int argc, char *argv[])
         perror("recvfrom");
         exit(1);
     }
+
     getpeername(sockfd,&client_addr,&client_addrlen);
     inet_ntop(client_addr.sa_family,get_in_addr(&client_addr),s, sizeof s);
-    printf("The server A has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+    printf("The server C has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
     printf("Edge----Cost\n");
     for(int i = 0;i < 16;i++){
         if(buf[i] != 0){
             printf("%c%c    %d\n",'A' + i/4, 'A' + j%4,buf[i]);
         }
     }
+
+
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family, get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with Client,The Server A has UDP port number %u and IP address %s\n",((struct sockaddr_in *)&local_addr)->sin_port,l);
+    printf("For this connection with Client,The Server C has UDP port number %u and IP address %s\n",((struct sockaddr_in *)&local_addr)->sin_port,l);
 
     
-
 
 
 

@@ -112,9 +112,7 @@ int main(void)
             perror("accept");
 			continue; 
 		}
-        inet_ntop(their_addr.ss_family,
-            	  get_in_addr((struct sockaddr *)&their_addr),
-                  s, sizeof s);
+        inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),s, sizeof s);
         printf("client: got connection from %s\n", s);
       //  if (!fork()) { // this is the child process
       //      close(sockfd); // child doesn't need the listener
@@ -261,6 +259,7 @@ int main(void)
     }
     freeaddrinfo(servinfo);
 
+    
 
     close(sockfd);
 	return 0; 
