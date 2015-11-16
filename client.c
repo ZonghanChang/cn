@@ -168,7 +168,10 @@ int main(void)
     */
 
     //UDP
-    
+    struct sockaddr server_addr;
+    socklen_t server_addrlen = sizeof server_addr;
+    char server[INET6_ADDRSTRLEN];
+
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
@@ -190,11 +193,30 @@ int main(void)
             udpData[i * 4 + j] = matrix[i][j];
         }
     }
+    getpeername(sockfd,&server_addr,&server_addrlen);
+    inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
+    
+    printf("The Client has sent the network topology to the network topology to the Server A with UDP port number %u and IP address %s (Server A's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&server_addr)->sin_port),server);
+
     if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
         perror("talker: sendto");
         exit(1); 
     }
+
+    getsockname(new_fd,&local_addr,&local_addrlen);
+    inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
+    printf("For this connection with ServerA,The Client has UDP port number %u and IP address %s.\n", (((struct sockaddr_in *)&local_addr)->sin_port),l);
+
+    
+    
+    printf("Edge----Cost\n");
+    for(int i = 0;i < 16;i++){
+        if(udpData[i] != 0 && i/4 < i%4){
+            printf("%c%c      %d\n",'A' + i/4, 'A' + i%4,udpData[i]);
+        }
+    }
     freeaddrinfo(servinfo);
+
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;

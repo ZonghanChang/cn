@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         }
         break; 
     }
-    
+       
     if (p == NULL) {
         fprintf(stderr, "server: failed to connect\n");
         return 2;
@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
 
     struct sockaddr local_addr;
     socklen_t local_addrlen = sizeof local_addr;
-    getsockname(sockfd,&local_addr,&local_addrlen);
     char l[INET6_ADDRSTRLEN];
+    getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client, the server A has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
         perror("recvfrom");
         exit(1);
     }
-
+    
 
     getpeername(sockfd,&client_addr,&client_addrlen);
     inet_ntop(client_addr.sa_family,get_in_addr(&client_addr),s, sizeof s);
