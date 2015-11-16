@@ -10,7 +10,11 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
-#define TCPPORT "25798"  
+#define TCPPORT "25798" 
+#define SERVERUDPPORTA "21798" 
+#define SERVERUDPPORTB "22798"
+#define SERVERUDPPORTC "23798"
+#define SERVERUDPPORTD "24798"
 #define BACKLOG 10   // how many pending connections queue will hold
 #define MAXDATASIZE 100
 void sigchld_handler(int s)
@@ -48,8 +52,8 @@ int main(void)
     int buf[5];
     int matrix[4][4];
     int received[4];
-    static int receivedNumber = 0;
-    int *pReceivedNumber = &receivedNumber;
+    int receivedNumber = 0;
+    int udpData[16];
 
 /**
 	int getaddrinfo(const char *node,     // e.g. "www.example.com" or IP
@@ -136,11 +140,128 @@ int main(void)
 		//}
        // close(new_fd);  // parent doesn't need this
     }
+    /**
     for(int i = 0;i < 4;i++){
         for(int j = 0;j < 4;j++){
             printf("%d\n", matrix[i][j]);
         }
         printf("\n");
     }
+    */
+
+    //UDP
+    
+
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE; 
+    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTA, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1; }
+    // loop through all the results and make a socket
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue; 
+        }
+        break; 
+    }
+    for(int i = 0;i < 4;i++){
+        for(int j = 0;j < 4;j++){
+            udpData[i * 4 + j] = matrix[i][j];
+        }
+    }
+    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
+        perror("talker: sendto");
+        exit(1); 
+    }
+    freeaddrinfo(servinfo);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE; 
+    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTB, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1; }
+    // loop through all the results and make a socket
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue; 
+        }
+        break; 
+    }
+    for(int i = 0;i < 4;i++){
+        for(int j = 0;j < 4;j++){
+            udpData[i * 4 + j] = matrix[i][j];
+        }
+    }
+    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
+        perror("talker: sendto");
+        exit(1); 
+    }
+    freeaddrinfo(servinfo);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE; 
+    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTC, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1; }
+    // loop through all the results and make a socket
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue; 
+        }
+        break; 
+    }
+    for(int i = 0;i < 4;i++){
+        for(int j = 0;j < 4;j++){
+            udpData[i * 4 + j] = matrix[i][j];
+        }
+    }
+    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
+        perror("talker: sendto");
+        exit(1); 
+    }
+    freeaddrinfo(servinfo);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE; 
+    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTD, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1; }
+    // loop through all the results and make a socket
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue; 
+        }
+        break; 
+    }
+    for(int i = 0;i < 4;i++){
+        for(int j = 0;j < 4;j++){
+            udpData[i * 4 + j] = matrix[i][j];
+        }
+    }
+    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
+        perror("talker: sendto");
+        exit(1); 
+    }
+    freeaddrinfo(servinfo);
+
+
+    close(sockfd);
 	return 0; 
 }

@@ -12,7 +12,7 @@
 #define UDPPORT "21798" // the port client will be connecting to
 #define CLIENTTCPPORT "25798"
 #define MAXDATASIZE 100 // max number of bytes we can get at once
-
+#define MAXBUFLEN 100
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -23,16 +23,19 @@ void *get_in_addr(struct sockaddr *sa)
 int main(int argc, char *argv[])
 {
     int sockfd, numbytes;
-    char buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
+    struct sockaddr_storage their_addr;
     int rv;
     char s[INET6_ADDRSTRLEN];
+    int buf[MAXBUFLEN];
     FILE *fp;
     char line[50];
     int max = 50;
     int costArray[5];
     int cost = 0;
     costArray[0] = 0;
+    socklen_t addr_len;
+
 
     if (argc != 2) {
         fprintf(stderr,"usage: server hostname\n");
@@ -47,7 +50,7 @@ int main(int argc, char *argv[])
     // read file
     printf("The Server A has the following neighbor information:\n");
     printf("Neighbor----Cost\n");
-    if((fp = fopen("/Users/zonghanchang/Documents/doc/course/EE450/test_trans/someVals", "r")) == NULL){
+    if((fp = fopen("/Users/zonghanchang/Documents/doc/course/EE450/socket/src/serverA.txt", "r")) == NULL){
         printf("error");
         return 1;
     }
@@ -108,9 +111,59 @@ int main(int argc, char *argv[])
         perror("send");
     }
 
-    close(sockfd);
-
-    printf("The Server A finishes sending its neighbor information to the Client with TCP port number %s and IP address %s\n",CLIENTTCPPORT,s);
+    //close(sockfd);
+    struct sockaddr client_addr;
+    char l[INET6_ADDRSTRLEN];
+    socklen_t client_addrlen = sizeof client_addr;
+    getpeername(sockfd,&client_addr,&client_addrlen);
+    printf("The Server A finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
     
+
+    // UDP
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE;
+
+
+    if ((rv = getaddrinfo(NULL, UDPPORT, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1;
+    }
+    // loop through all the results and bind to the first we can
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("listener: socket");
+        continue; 
+        }
+        if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+            close(sockfd);
+            perror("listener: bind");
+        continue; 
+        }
+        break; 
+    }
+
+    if (p == NULL) {
+        fprintf(stderr, "listener: failed to bind socket\n");
+        return 2;
+    }
+    freeaddrinfo(servinfo);
+
+    addr_len = sizeof their_addr;
+    if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
+        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+        perror("recvfrom");
+        exit(1);
+    }
+    printf("listener: packet is %d bytes long\n", numbytes);
+    for(int i = 0;i < 16;i++){
+        printf("listener: packet contains \"%d\"\n", buf[i]);
+    }
+    
+
+
+
     return 0; 
 }
