@@ -57,7 +57,6 @@ int main(int argc, char *argv[])
 
     else{
         while(fgets(line, max, fp) != NULL){
-            printf("%s",line);
             int pos = strlen(line);
             while(!isalpha(line[pos])){
                 pos--;
@@ -72,6 +71,7 @@ int main(int argc, char *argv[])
             }
 
             costArray[line[temp] - 'A' + 1] = cost;
+            printf("server%c     %d\n",line[temp],cost);
             cost = 0;
         }
         printf("\n");   
@@ -168,8 +168,8 @@ int main(int argc, char *argv[])
     printf("The server D has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
     printf("Edge----Cost\n");
     for(int i = 0;i < 16;i++){
-        if(buf[i] != 0){
-            printf("%c%c    %d\n",'A' + i/4, 'A' + j%4,buf[i]);
+        if(buf[i] != 0 && i/4 < i%4){
+            printf("%c%c      %d\n",'A' + i/4, 'A' + i%4,buf[i]);
         }
     }
 

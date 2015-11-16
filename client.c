@@ -104,7 +104,14 @@ int main(void)
         perror("sigaction");
 		exit(1); 
 	}
-    printf("client: waiting for connections...\n");
+
+    struct sockaddr local_addr;
+    socklen_t local_addrlen = sizeof local_addr;
+    char l[INET6_ADDRSTRLEN];
+    getsockname(sockfd,&local_addr,&local_addrlen);
+    inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
+    printf("The client has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
+
     while(1) {  // main accept() loop
         sin_size = sizeof their_addr;
         new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
@@ -113,7 +120,6 @@ int main(void)
 			continue; 
 		}
         inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),s, sizeof s);
-        printf("client: got connection from %s\n", s);
       //  if (!fork()) { // this is the child process
       //      close(sockfd); // child doesn't need the listener
             if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
@@ -124,20 +130,34 @@ int main(void)
             for(int i = 0;i < 4;i++){
                 matrix[buf[0]][i] = buf[i + 1];
             }
+
+            printf("The Client receives neighbor information from the Server %c with TCP port number %u and IP address %s(The Server %c's TCP port number and IP address).\n",'A' + buf[0],(((struct sockaddr_in *)&their_addr)->sin_port),s ,'A' + buf[0]);
             close(new_fd);
+
+            printf("The Server%c has the following neighbor information:\n",'A' + buf[0]);
+            printf("Neighbor----Cost\n");
+            for(int i = 1;i <= 4;i++){
+                if(buf[i] != 0){
+                    printf("server%c     %d\n",'A' + i - 1, buf[i]);
+                }
+            }
             
+
+            getsockname(new_fd,&local_addr,&local_addrlen);
+            inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
+            printf("For this connection with Server%c,The Client has TCP port number %u and IP address %s.\n",'A' + buf[0], (((struct sockaddr_in *)&local_addr)->sin_port),l);
             for(int i = 0;i < 4;i++){
                 receivedNumber += received[i];
             }
-            printf("%d\n",receivedNumber );
             if(receivedNumber == 4){
                 break;
             }
             receivedNumber = 0;
+    }
 			//exit(0); 
 		//}
        // close(new_fd);  // parent doesn't need this
-    }
+    
     /**
     for(int i = 0;i < 4;i++){
         for(int j = 0;j < 4;j++){
@@ -149,8 +169,6 @@ int main(void)
 
     //UDP
     
-
-
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
@@ -194,11 +212,7 @@ int main(void)
         }
         break; 
     }
-    for(int i = 0;i < 4;i++){
-        for(int j = 0;j < 4;j++){
-            udpData[i * 4 + j] = matrix[i][j];
-        }
-    }
+
     if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
         perror("talker: sendto");
         exit(1); 
@@ -221,11 +235,7 @@ int main(void)
         }
         break; 
     }
-    for(int i = 0;i < 4;i++){
-        for(int j = 0;j < 4;j++){
-            udpData[i * 4 + j] = matrix[i][j];
-        }
-    }
+
     if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
         perror("talker: sendto");
         exit(1); 
@@ -248,18 +258,14 @@ int main(void)
         }
         break; 
     }
-    for(int i = 0;i < 4;i++){
-        for(int j = 0;j < 4;j++){
-            udpData[i * 4 + j] = matrix[i][j];
-        }
-    }
+
     if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
         perror("talker: sendto");
         exit(1); 
     }
     freeaddrinfo(servinfo);
 
-    
+
 
     close(sockfd);
 	return 0; 
