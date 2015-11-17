@@ -186,6 +186,8 @@ int main(void)
         if ((rv = getaddrinfo("127.0.0.1", servers[i], &hints, &servinfo)) != 0) {
             fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
             return 1; }
+
+        printf("TEST servinfo : %u\n", (((struct sockaddr_in *)servinfo->ai_addr)->sin_port));
         // loop through all the results and make a socket
         for(p = servinfo; p != NULL; p = p->ai_next) {
             if ((sockfd = socket(p->ai_family, p->ai_socktype,
