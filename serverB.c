@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     getsockname(sockfd,&local_addr,&local_addrlen);
     char l[INET6_ADDRSTRLEN];
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with Client, the server B has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
+    printf("For this connection with Client, the server B has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
 
 
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family, get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with Client,The Server B has UDP port number %u and IP address %s\n",((struct sockaddr_in *)&local_addr)->sin_port,l);
+    printf("For this connection with Client,The Server B has UDP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
     
 

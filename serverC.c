@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     struct sockaddr client_addr;
     socklen_t client_addrlen = sizeof client_addr;
     getpeername(sockfd,&client_addr,&client_addrlen);
-    printf("The Server C finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+    printf("The Server C finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&client_addr)->sin_port),s);
 
     struct sockaddr local_addr;
     socklen_t local_addrlen = sizeof local_addr;
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family, get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with Client,The Server C has UDP port number %u and IP address %s\n",((struct sockaddr_in *)&local_addr)->sin_port,l);
+    printf("For this connection with Client,The Server C has UDP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
     
 

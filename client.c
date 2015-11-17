@@ -17,6 +17,82 @@
 #define SERVERUDPPORTD "24798"
 #define BACKLOG 10   // how many pending connections queue will hold
 #define MAXDATASIZE 100
+
+
+
+
+#define maxVertices 1000
+#define maxEdges 1000000
+int graph[maxVertices][maxVertices];
+/* Input graph must be undirected,weighted and connected*/
+typedef struct Edge
+{
+    int from,to,weight;
+}Edge;
+int compare(const void * x,const void * y)
+{
+    return (*(Edge *)x).weight - (*(Edge *)y).weight;
+}
+Edge E[maxEdges];
+int parent[maxVertices];
+void init(int vertices)
+{
+    int iter=0;
+    for(iter=0;iter<vertices;iter++)
+    {
+        parent[iter]=-1;
+    }
+
+}
+int Find(int vertex)
+{
+    if(parent[vertex]==-1)return vertex;
+    return parent[vertex] = Find(parent[vertex]); /* Finding its parent as well as updating the parent 
+                             of all vertices along this path */
+}
+void Union(int parent1,int parent2)
+{
+    /* This can be implemented in many other ways. This is one of them */
+    parent[parent1] = parent2;
+}
+void Kruskal(int vertices,int edges)
+{
+    memset(graph,-1,sizeof(graph)); /* -1 represents the absence of edge between them */
+    /* Sort the edges according to the weight */
+    qsort(E,edges,sizeof(Edge),compare);
+    /* Initialize parents of all vertices to be -1.*/
+    init(vertices);
+    int totalEdges = 0,edgePos=0,from,to,weight;
+    Edge now;
+    while(totalEdges < vertices -1)
+    {
+        if(edgePos==edges)
+        {
+            /* Input Graph is not connected*/
+            exit(0);
+        }
+        now = E[edgePos++];
+        from = now.from;
+        to = now.to;
+        weight=now.weight;
+        /* See If vetices from,to are connected. If they are connected do not add this edge. */
+        int parent1 = Find(from);
+        int parent2 = Find(to);
+        if(parent1!=parent2)
+        {
+            graph[from][to] = weight;
+            Union(parent1,parent2);
+            totalEdges++;
+        }
+    }
+
+}
+
+
+
+
+
+
 void sigchld_handler(int s)
 {
     // waitpid() might overwrite errno, so we save and restore it:
@@ -110,7 +186,7 @@ int main(void)
     char l[INET6_ADDRSTRLEN];
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-    printf("The client has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
+    printf("The client has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
     while(1) {  // main accept() loop
         sin_size = sizeof their_addr;
@@ -145,7 +221,7 @@ int main(void)
 
             getsockname(new_fd,&local_addr,&local_addrlen);
             inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-            printf("For this connection with Server%c,The Client has TCP port number %u and IP address %s.\n",'A' + buf[0], (((struct sockaddr_in *)&local_addr)->sin_port),l);
+            printf("For this connection with Server%c,The Client has TCP port number %u and IP address %s.\n",'A' + buf[0], ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
             for(int i = 0;i < 4;i++){
                 receivedNumber += received[i];
             }
@@ -186,8 +262,6 @@ int main(void)
         if ((rv = getaddrinfo("127.0.0.1", servers[i], &hints, &servinfo)) != 0) {
             fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
             return 1; }
-
-        printf("TEST servinfo : %u\n", (((struct sockaddr_in *)servinfo->ai_addr)->sin_port));
         // loop through all the results and make a socket
         for(p = servinfo; p != NULL; p = p->ai_next) {
             if ((sockfd = socket(p->ai_family, p->ai_socktype,
@@ -202,11 +276,13 @@ int main(void)
                 udpData[i * 4 + j] = matrix[i][j];
             }
         }
-        //getpeername(sockfd,&server_addr,&server_addrlen);
-        //inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
         
 
-        printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %s and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i, servers[i],server,'A' + i);
+        getpeername(sockfd,&server_addr,&server_addrlen);
+        inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
+        
+
+        printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %u and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i, ntohs(((struct sockaddr_in *)&server_addr)->sin_port),server,'A' + i);
 
         if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
             perror("talker: sendto");
@@ -217,7 +293,6 @@ int main(void)
         inet_ntop(p->ai_addr->sa_family,get_in_addr(p->ai_addr),l, sizeof l);
         printf("For this connection with Server%c The Client has UDP port number %u and IP address %s.\n", 'A' + i, (((struct sockaddr_in *)&local_addr)->sin_port),l);
 
-        printf("TEST : %u\n", (((struct sockaddr_in *)p->ai_addr)->sin_port));//这个跟server那边得到的port number是一致的，server那边得到的跟静态的不一致。
         printf("Edge----Cost\n");
         for(int i = 0;i < 16;i++){
             if(udpData[i] != 0 && i/4 < i%4){
@@ -226,6 +301,38 @@ int main(void)
         }
         freeaddrinfo(servinfo);
     }
+    
+
+
+
+    int vertices = 4,edges = 0;
+    int from,to,weight;
+    int totalCost;
+    
+    
+    for(int i = 0;i < 4;i++){
+        for(int j = i + 1;j < 4;j++){
+            if(matrix[i][j] != 0){
+                E[edges].from = i; 
+                E[edges].to = j; 
+                E[edges].weight = matrix[i][j];
+                edges++;
+            }
+        }
+    }
+    /* Finding MST */
+    Kruskal(vertices,edges);
+    /* Printing the MST */
+    printf("The Client has calculated a tree.The tree cost is %d\n",totalCost);
+    for(int i=0;i<vertices;i++){
+        for(int j=0;j<vertices;j++){
+            if(graph[i][j]!=-1){
+                printf("%c%c     %d\n",'A' + i,'A' + j,graph[i][j]);
+            }
+        }
+    }
+     
     return 0;
+
 
 }
