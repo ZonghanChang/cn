@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
     costArray[0] = 0;
     socklen_t addr_len;
 
-
-    if (argc != 2) {
-        fprintf(stderr,"usage: server hostname\n");
-        exit(1);
+    for(int i = 1;i < 5;i++){
+        costArray[i] = 0;
     }
+
+
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     }
     // read file end
 
-    if ((rv = getaddrinfo(argv[1], CLIENTTCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("127.0.0.1", CLIENTTCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -162,11 +162,15 @@ int main(int argc, char *argv[])
         perror("recvfrom");
         exit(1);
     }
-    
 
-    getpeername(sockfd,&client_addr,&client_addrlen);
-    inet_ntop(client_addr.sa_family,get_in_addr(&client_addr),s, sizeof s);
-    printf("The server A has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+    //getpeername(sockfd,&client_addr,&client_addrlen);
+    //inet_ntop(client_addr.sa_family,get_in_addr(&client_addr),s, sizeof s);
+    //printf("The server A has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+
+    char t[INET6_ADDRSTRLEN];
+    inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),t, sizeof t);
+    printf("The server A has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&their_addr)->sin_port),t);
+
     printf("Edge----Cost\n");
     for(int i = 0;i < 16;i++){
         if(buf[i] != 0 && i/4 < i%4){

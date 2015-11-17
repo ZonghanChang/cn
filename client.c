@@ -168,127 +168,60 @@ int main(void)
     */
 
     //UDP
-    struct sockaddr server_addr;
-    socklen_t server_addrlen = sizeof server_addr;
+    
     char server[INET6_ADDRSTRLEN];
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE; 
-    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTA, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1; }
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue; 
-        }
-        break; 
-    }
+    char *servers[4] = {SERVERUDPPORTA,SERVERUDPPORTB,SERVERUDPPORTC,SERVERUDPPORTD};
     for(int i = 0;i < 4;i++){
-        for(int j = 0;j < 4;j++){
-            udpData[i * 4 + j] = matrix[i][j];
+        int sockfd;
+        struct addrinfo hints, *servinfo, *p;
+        struct sockaddr local_addr;
+        socklen_t local_addrlen = sizeof local_addr;
+        char l[INET6_ADDRSTRLEN];
+        struct sockaddr server_addr;
+        socklen_t server_addrlen = sizeof server_addr;
+        memset(&hints, 0, sizeof hints);
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_DGRAM;
+        hints.ai_flags = AI_PASSIVE; 
+        if ((rv = getaddrinfo("127.0.0.1", servers[i], &hints, &servinfo)) != 0) {
+            fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+            return 1; }
+        // loop through all the results and make a socket
+        for(p = servinfo; p != NULL; p = p->ai_next) {
+            if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                    p->ai_protocol)) == -1) {
+                perror("talker: socket");
+                continue; 
+            }
+            break; 
         }
-    }
-    getpeername(sockfd,&server_addr,&server_addrlen);
-    inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
-    
-    printf("The Client has sent the network topology to the network topology to the Server A with UDP port number %u and IP address %s (Server A's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&server_addr)->sin_port),server);
-
-    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
-        perror("talker: sendto");
-        exit(1); 
-    }
-
-    getsockname(new_fd,&local_addr,&local_addrlen);
-    inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with ServerA,The Client has UDP port number %u and IP address %s.\n", (((struct sockaddr_in *)&local_addr)->sin_port),l);
-
-    
-    
-    printf("Edge----Cost\n");
-    for(int i = 0;i < 16;i++){
-        if(udpData[i] != 0 && i/4 < i%4){
-            printf("%c%c      %d\n",'A' + i/4, 'A' + i%4,udpData[i]);
+        for(int i = 0;i < 4;i++){
+            for(int j = 0;j < 4;j++){
+                udpData[i * 4 + j] = matrix[i][j];
+            }
         }
-    }
-    freeaddrinfo(servinfo);
+        getpeername(sockfd,&server_addr,&server_addrlen);
+        inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
+        
+        printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %u and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i,(((struct sockaddr_in *)&server_addr)->sin_port),server,'A' + i);
 
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE; 
-    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTB, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1; }
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue; 
+        if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
+            perror("talker: sendto");
+            exit(1); 
         }
-        break; 
-    }
 
-    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
-        perror("talker: sendto");
-        exit(1); 
-    }
-    freeaddrinfo(servinfo);
+        getsockname(new_fd,&local_addr,&local_addrlen);
+        inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
+        printf("For this connection with Server%c The Client has UDP port number %u and IP address %s.\n", 'A' + i, (((struct sockaddr_in *)&local_addr)->sin_port),l);
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE; 
-    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTC, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1; }
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue; 
+        printf("Edge----Cost\n");
+        for(int i = 0;i < 16;i++){
+            if(udpData[i] != 0 && i/4 < i%4){
+                printf("%c%c      %d\n",'A' + i/4, 'A' + i%4,udpData[i]);
+            }
         }
-        break; 
+        freeaddrinfo(servinfo);
     }
+    return 0;
 
-    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
-        perror("talker: sendto");
-        exit(1); 
-    }
-    freeaddrinfo(servinfo);
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE; 
-    if ((rv = getaddrinfo("127.0.0.1", SERVERUDPPORTD, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1; }
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue; 
-        }
-        break; 
-    }
-
-    if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
-        perror("talker: sendto");
-        exit(1); 
-    }
-    freeaddrinfo(servinfo);
-
-
-
-    close(sockfd);
-	return 0; 
 }
