@@ -185,10 +185,5 @@ int main(int argc, char *argv[])
     inet_ntop(local_addr.sa_family, get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client,The Server A has UDP port number %u and IP address %s\n",((struct sockaddr_in *)&local_addr)->sin_port,l);
 
-    
-
-
-
-
     return 0; 
 }

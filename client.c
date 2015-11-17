@@ -215,6 +215,7 @@ int main(void)
         inet_ntop(p->ai_addr->sa_family,get_in_addr(p->ai_addr),l, sizeof l);
         printf("For this connection with Server%c The Client has UDP port number %u and IP address %s.\n", 'A' + i, (((struct sockaddr_in *)&local_addr)->sin_port),l);
 
+        printf("TEST : %u\n", (((struct sockaddr_in *)p->ai_addr)->sin_port));//这个跟server那边得到的port number是一致的，server那边得到的跟静态的不一致。
         printf("Edge----Cost\n");
         for(int i = 0;i < 16;i++){
             if(udpData[i] != 0 && i/4 < i%4){
