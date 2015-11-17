@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE;
 
 
-    if ((rv = getaddrinfo(NULL, UDPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("127.0.0.1", UDPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }

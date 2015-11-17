@@ -124,6 +124,8 @@ int main(int argc, char *argv[])
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client, the server A has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
+
+
     // UDP
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -131,7 +133,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE;
 
 
-    if ((rv = getaddrinfo(NULL, UDPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("127.0.0.1", UDPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }

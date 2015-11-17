@@ -63,7 +63,7 @@ int main(void)
 	You give this function three input parameters, and it gives you a pointer to a linked-list, res, of results.
 
 */
-    if ((rv = getaddrinfo(NULL, TCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("127.0.0.1", TCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
 	}
