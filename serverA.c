@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     char l[INET6_ADDRSTRLEN];
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-    printf("For this connection with Client, the server A has TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&local_addr)->sin_port),l);
+    printf("For this connection with Client, the server A has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
 
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
     char t[INET6_ADDRSTRLEN];
     inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),t, sizeof t);
-    printf("The server A has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&their_addr)->sin_port),t);
+    printf("The server A has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",ntohs(((struct sockaddr_in *)&their_addr)->sin_port),t);
 
     printf("Edge----Cost\n");
     for(int i = 0;i < 16;i++){

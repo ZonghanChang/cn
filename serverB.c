@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     struct sockaddr client_addr;
     socklen_t client_addrlen = sizeof client_addr;
     getpeername(sockfd,&client_addr,&client_addrlen);
-    printf("The Server B finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+    printf("The Server B finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&client_addr)->sin_port),s);
 
     struct sockaddr local_addr;
     socklen_t local_addrlen = sizeof local_addr;
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     //printf("The server B has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
     char t[INET6_ADDRSTRLEN];
     inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),t, sizeof t);
-    printf("The server B has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&their_addr)->sin_port),t);
+    printf("The server B has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",ntohs(((struct sockaddr_in *)&their_addr)->sin_port),t);
 
     printf("Edge----Cost\n");
     for(int i = 0;i < 16;i++){

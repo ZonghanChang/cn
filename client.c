@@ -22,7 +22,7 @@
 
 
 #define maxVertices 1000
-#define maxEdges 1000000
+#define maxEdges 1000
 int graph[maxVertices][maxVertices];
 /* Input graph must be undirected,weighted and connected*/
 typedef struct Edge
@@ -112,7 +112,7 @@ void *get_in_addr(struct sockaddr *sa)
 int main(void)
 {
 
-
+    int i,j;
     int sockfd, new_fd,numbytes;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
@@ -131,14 +131,7 @@ int main(void)
     int receivedNumber = 0;
     int udpData[16];
 
-/**
-	int getaddrinfo(const char *node,     // e.g. "www.example.com" or IP
-                    const char *service,  // e.g. "http" or port number
-                    const struct addrinfo *hints,
-                    struct addrinfo **res);
-	You give this function three input parameters, and it gives you a pointer to a linked-list, res, of results.
 
-*/
     if ((rv = getaddrinfo("127.0.0.1", TCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
@@ -184,6 +177,7 @@ int main(void)
     struct sockaddr local_addr;
     socklen_t local_addrlen = sizeof local_addr;
     char l[INET6_ADDRSTRLEN];
+    
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
     printf("The client has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
@@ -196,8 +190,8 @@ int main(void)
 			continue; 
 		}
         inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),s, sizeof s);
-      //  if (!fork()) { // this is the child process
-      //      close(sockfd); // child doesn't need the listener
+
+
             if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
                 perror("recv");
                 exit(1); 
@@ -207,7 +201,7 @@ int main(void)
                 matrix[buf[0]][i] = buf[i + 1];
             }
 
-            printf("The Client receives neighbor information from the Server %c with TCP port number %u and IP address %s(The Server %c's TCP port number and IP address).\n",'A' + buf[0],(((struct sockaddr_in *)&their_addr)->sin_port),s ,'A' + buf[0]);
+            printf("The Client receives neighbor information from the Server %c with TCP port number %u and IP address %s(The Server %c's TCP port number and IP address).\n",'A' + buf[0],ntohs(((struct sockaddr_in *)&their_addr)->sin_port),s ,'A' + buf[0]);
             close(new_fd);
 
             printf("The Server%c has the following neighbor information:\n",'A' + buf[0]);
@@ -230,24 +224,13 @@ int main(void)
             }
             receivedNumber = 0;
     }
-			//exit(0); 
-		//}
-       // close(new_fd);  // parent doesn't need this
     
-    /**
-    for(int i = 0;i < 4;i++){
-        for(int j = 0;j < 4;j++){
-            printf("%d\n", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    */
 
     //UDP
     
     char server[INET6_ADDRSTRLEN];
     char *servers[4] = {SERVERUDPPORTA,SERVERUDPPORTB,SERVERUDPPORTC,SERVERUDPPORTD};
-    for(int i = 0;i < 4;i++){
+    for(i = 0;i < 4;i++){
         int sockfd;
         struct addrinfo hints, *servinfo, *p;
         struct sockaddr local_addr;
@@ -271,18 +254,19 @@ int main(void)
             }
             break; 
         }
-        for(int i = 0;i < 4;i++){
-            for(int j = 0;j < 4;j++){
-                udpData[i * 4 + j] = matrix[i][j];
+        int m;
+        for(m = 0;m < 4;m++){
+            for(j = 0;j < 4;j++){
+                udpData[m * 4 + j] = matrix[m][j];
             }
         }
         
 
-        getpeername(sockfd,&server_addr,&server_addrlen);
-        inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
+        //getpeername(sockfd,&server_addr,&server_addrlen);
+        //inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
         
-
-        printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %u and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i, ntohs(((struct sockaddr_in *)&server_addr)->sin_port),server,'A' + i);
+        inet_ntop(p->ai_family,get_in_addr((struct sockaddr *)(p->ai_addr)),server, sizeof server);
+        printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %u and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i, ntohs(((struct sockaddr_in *)(p->ai_addr))->sin_port),server,'A' + i);
 
         if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
             perror("talker: sendto");
@@ -291,12 +275,13 @@ int main(void)
 
         getsockname(sockfd,&local_addr,&local_addrlen);
         inet_ntop(p->ai_addr->sa_family,get_in_addr(p->ai_addr),l, sizeof l);
-        printf("For this connection with Server%c The Client has UDP port number %u and IP address %s.\n", 'A' + i, (((struct sockaddr_in *)&local_addr)->sin_port),l);
+        printf("For this connection with Server%c The Client has UDP port number %u and IP address %s.\n", 'A' + i, ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
         printf("Edge----Cost\n");
-        for(int i = 0;i < 16;i++){
-            if(udpData[i] != 0 && i/4 < i%4){
-                printf("%c%c      %d\n",'A' + i/4, 'A' + i%4,udpData[i]);
+        int k;
+        for(k = 0;k < 16;k++){
+            if(udpData[k] != 0 && k/4 < k%4){
+                printf("%c%c      %d\n",'A' + k/4, 'A' + k%4,udpData[k]);
             }
         }
         freeaddrinfo(servinfo);
@@ -304,14 +289,13 @@ int main(void)
     
 
 
-
     int vertices = 4,edges = 0;
     int from,to,weight;
-    int totalCost;
+    int totalCost = 0;
     
     
-    for(int i = 0;i < 4;i++){
-        for(int j = i + 1;j < 4;j++){
+    for(i = 0;i < 4;i++){
+        for(j = i + 1;j < 4;j++){
             if(matrix[i][j] != 0){
                 E[edges].from = i; 
                 E[edges].to = j; 
@@ -323,9 +307,16 @@ int main(void)
     /* Finding MST */
     Kruskal(vertices,edges);
     /* Printing the MST */
+    for(i=0;i<vertices;i++){
+        for(j=0;j<vertices;j++){
+            if(graph[i][j]!=-1){
+                totalCost += graph[i][j];
+            }
+        }
+    }
     printf("The Client has calculated a tree.The tree cost is %d\n",totalCost);
-    for(int i=0;i<vertices;i++){
-        for(int j=0;j<vertices;j++){
+    for(i=0;i<vertices;i++){
+        for(j=0;j<vertices;j++){
             if(graph[i][j]!=-1){
                 printf("%c%c     %d\n",'A' + i,'A' + j,graph[i][j]);
             }
