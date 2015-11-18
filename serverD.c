@@ -35,7 +35,9 @@ int main(int argc, char *argv[])
     int cost = 0;
     costArray[0] = 3;
     socklen_t addr_len;
-    for(int i = 1;i < 5;i++){
+    int i;
+
+    for(i = 1;i < 5;i++){
         costArray[i] = 0;
     }
 
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
     // read file
     printf("The Server D has the following neighbor information:\n");
     printf("Neighbor----Cost\n");
-    if((fp = fopen("/Users/zonghanchang/Documents/doc/course/EE450/socket/src/serverD.txt", "r")) == NULL){
+    if((fp = fopen("/home/scf-25/zonghanc/socket/serverD.txt", "r")) == NULL){
         printf("error");
         return 1;
     }
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
     }
     // read file end
 
-    if ((rv = getaddrinfo("127.0.0.1", CLIENTTCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("nunki.usc.edu", CLIENTTCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -170,7 +172,7 @@ int main(int argc, char *argv[])
     printf("The server D has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",ntohs(((struct sockaddr_in *)&their_addr)->sin_port),t);
 
     printf("Edge----Cost\n");
-    for(int i = 0;i < 16;i++){
+    for(i = 0;i < 16;i++){
         if(buf[i] != 0 && i/4 < i%4){
             printf("%c%c      %d\n",'A' + i/4, 'A' + i%4,buf[i]);
         }
@@ -180,10 +182,6 @@ int main(int argc, char *argv[])
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family, get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client,The Server D has UDP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
-
-    
-
-
 
     return 0; 
 }

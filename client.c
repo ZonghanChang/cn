@@ -132,7 +132,7 @@ int main(void)
     int udpData[16];
 
 
-    if ((rv = getaddrinfo("127.0.0.1", TCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("nunki.usc.edu", TCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
 	}
@@ -197,7 +197,7 @@ int main(void)
                 exit(1); 
             }
             received[buf[0]] = 1;
-            for(int i = 0;i < 4;i++){
+            for(i = 0;i < 4;i++){
                 matrix[buf[0]][i] = buf[i + 1];
             }
 
@@ -206,7 +206,7 @@ int main(void)
 
             printf("The Server%c has the following neighbor information:\n",'A' + buf[0]);
             printf("Neighbor----Cost\n");
-            for(int i = 1;i <= 4;i++){
+            for(i = 1;i <= 4;i++){
                 if(buf[i] != 0){
                     printf("server%c     %d\n",'A' + i - 1, buf[i]);
                 }
@@ -216,7 +216,7 @@ int main(void)
             getsockname(new_fd,&local_addr,&local_addrlen);
             inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
             printf("For this connection with Server%c,The Client has TCP port number %u and IP address %s.\n",'A' + buf[0], ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
-            for(int i = 0;i < 4;i++){
+            for(i = 0;i < 4;i++){
                 receivedNumber += received[i];
             }
             if(receivedNumber == 4){
@@ -321,8 +321,6 @@ int main(void)
             }
         }
     }
-     
     return 0;
-
-
 }
+
