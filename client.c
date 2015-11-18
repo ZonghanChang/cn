@@ -247,8 +247,7 @@ int main(void)
             return 1; }
         // loop through all the results and make a socket
         for(p = servinfo; p != NULL; p = p->ai_next) {
-            if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                    p->ai_protocol)) == -1) {
+            if ((sockfd = socket(p->ai_family, p->ai_socktype,p->ai_protocol)) == -1) {
                 perror("talker: socket");
                 continue; 
             }
@@ -265,7 +264,7 @@ int main(void)
         //getpeername(sockfd,&server_addr,&server_addrlen);
         //inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),server, sizeof server);
         
-        inet_ntop(p->ai_family,get_in_addr((struct sockaddr *)(p->ai_addr)),server, sizeof server);
+        inet_ntop(p->ai_family,get_in_addr(p->ai_addr),server, sizeof server);
         printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %u and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i, ntohs(((struct sockaddr_in *)(p->ai_addr))->sin_port),server,'A' + i);
 
         if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
