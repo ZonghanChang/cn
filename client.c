@@ -181,7 +181,7 @@ int main(void)
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
     printf("The client has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
-
+    printf("\n"); 
     while(1) {  // main accept() loop
         sin_size = sizeof their_addr;
         new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
@@ -189,40 +189,46 @@ int main(void)
             perror("accept");
 			continue; 
 		}
-        inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),s, sizeof s);
+        //inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),s, sizeof s);
+        struct sockaddr server_addr;
+        socklen_t server_addrlen = sizeof server_addr;
+        char t[INET6_ADDRSTRLEN];
+        getpeername(new_fd,&server_addr,&server_addrlen);
+        inet_ntop(server_addr.sa_family,get_in_addr(&server_addr),t, sizeof t);
 
+        if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
+            perror("recv");
+            exit(1); 
+        }
+        received[buf[0]] = 1;
+        for(i = 0;i < 4;i++){
+            matrix[buf[0]][i] = buf[i + 1];
+        }
+        printf("The Client receives neighbor information from the Server %c with TCP port number %u and IP address %s(The Server %c's TCP port number and IP address).\n",'A' + buf[0],ntohs(((struct sockaddr_in *)&server_addr)->sin_port),t,'A' + buf[0]);
+        close(new_fd);
+        printf("\n"); 
+        printf("The Server%c has the following neighbor information:\n",'A' + buf[0]);
+        printf("Neighbor----Cost\n");
+        for(i = 1;i <= 4;i++){
+            if(buf[i] != 0){
+                printf("server%c     %d\n",'A' + i - 1, buf[i]);
+            }
+        }
+        printf("\n"); 
 
-            if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
-                perror("recv");
-                exit(1); 
-            }
-            received[buf[0]] = 1;
-            for(i = 0;i < 4;i++){
-                matrix[buf[0]][i] = buf[i + 1];
-            }
+        getsockname(new_fd,&local_addr,&local_addrlen);
+        inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
+        printf("For this connection with Server%c,The Client has TCP port number %u and IP address %s.\n",'A' + buf[0], ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
+        printf("\n"); 
+        printf("\n");
 
-            printf("The Client receives neighbor information from the Server %c with TCP port number %u and IP address %s(The Server %c's TCP port number and IP address).\n",'A' + buf[0],ntohs(((struct sockaddr_in *)&their_addr)->sin_port),s ,'A' + buf[0]);
-            close(new_fd);
-
-            printf("The Server%c has the following neighbor information:\n",'A' + buf[0]);
-            printf("Neighbor----Cost\n");
-            for(i = 1;i <= 4;i++){
-                if(buf[i] != 0){
-                    printf("server%c     %d\n",'A' + i - 1, buf[i]);
-                }
-            }
-            
-
-            getsockname(new_fd,&local_addr,&local_addrlen);
-            inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
-            printf("For this connection with Server%c,The Client has TCP port number %u and IP address %s.\n",'A' + buf[0], ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
-            for(i = 0;i < 4;i++){
-                receivedNumber += received[i];
-            }
-            if(receivedNumber == 4){
-                break;
-            }
-            receivedNumber = 0;
+        for(i = 0;i < 4;i++){
+            receivedNumber += received[i];
+        }
+        if(receivedNumber == 4){
+            break;
+        }
+        receivedNumber = 0;
     }
     
 
@@ -242,7 +248,7 @@ int main(void)
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_DGRAM;
         hints.ai_flags = AI_PASSIVE; 
-        if ((rv = getaddrinfo("127.0.0.1", servers[i], &hints, &servinfo)) != 0) {
+        if ((rv = getaddrinfo("nunki.usc.edu", servers[i], &hints, &servinfo)) != 0) {
             fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
             return 1; }
         // loop through all the results and make a socket
@@ -266,7 +272,7 @@ int main(void)
         
         inet_ntop(p->ai_family,get_in_addr(p->ai_addr),server, sizeof server);
         printf("The Client has sent the network topology to the network topology to the Server %c with UDP port number %u and IP address %s (Server %c's UDP port number and IP address) as follows:\n",'A' + i, ntohs(((struct sockaddr_in *)(p->ai_addr))->sin_port),server,'A' + i);
-
+        printf("\n"); 
         if ((numbytes = sendto(sockfd, udpData, 16 * sizeof *udpData, 0,p->ai_addr, p->ai_addrlen)) == -1) {
             perror("talker: sendto");
             exit(1); 
@@ -283,6 +289,7 @@ int main(void)
                 printf("%c%c      %d\n",'A' + k/4, 'A' + k%4,udpData[k]);
             }
         }
+        printf("\n"); 
         freeaddrinfo(servinfo);
     }
     

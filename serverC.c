@@ -115,14 +115,14 @@ int main(int argc, char *argv[])
     socklen_t client_addrlen = sizeof client_addr;
     getpeername(sockfd,&client_addr,&client_addrlen);
     printf("The Server C finishes sending its neighbor information to the Client with TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&client_addr)->sin_port),s);
-
+    printf("\n"); 
     struct sockaddr local_addr;
     socklen_t local_addrlen = sizeof local_addr;
     getsockname(sockfd,&local_addr,&local_addrlen);
     char l[INET6_ADDRSTRLEN];
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client, the server C has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
-
+    printf("\n"); 
     // UDP
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE;
 
 
-    if ((rv = getaddrinfo("127.0.0.1", UDPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo("nunki.usc.edu", UDPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -162,9 +162,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    //getpeername(sockfd,&client_addr,&client_addrlen);
-    //inet_ntop(client_addr.sa_family,get_in_addr(&client_addr),s, sizeof s);
-    //printf("The server C has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
+    
     char t[INET6_ADDRSTRLEN];
     inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),t, sizeof t);
     printf("The server C has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",ntohs(((struct sockaddr_in *)&their_addr)->sin_port),t);
@@ -176,7 +174,7 @@ int main(int argc, char *argv[])
         }
     }
 
-
+    printf("\n"); 
     getsockname(sockfd,&local_addr,&local_addrlen);
     inet_ntop(local_addr.sa_family, get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client,The Server C has UDP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
