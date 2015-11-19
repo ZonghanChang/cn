@@ -13,6 +13,9 @@
 #define CLIENTTCPPORT "25798"
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 #define MAXBUFLEN 100
+#define CLIENTNAME "nunki.usc.edu"
+#define SERVERNAME "nunki.usc.edu"
+
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -78,12 +81,13 @@ int main(int argc, char *argv[])
     }
     // read file end
 
-    if ((rv = getaddrinfo("nunki.usc.edu", CLIENTTCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(CLIENTNAME, CLIENTTCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
 
-    // loop through all the results and connect to the first we can
+    
+    
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {
@@ -105,13 +109,15 @@ int main(int argc, char *argv[])
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
               s, sizeof s);
-    //printf("client: connecting to %s\n", s);
-    freeaddrinfo(servinfo); // all done with this structure
+    
+
+    freeaddrinfo(servinfo); 
     if (send(sockfd, costArray, 30, 0) == -1){
         perror("send");
     }
 
-    //close(sockfd);
+    
+
     struct sockaddr client_addr;
     socklen_t client_addrlen = sizeof client_addr;
     getpeername(sockfd,&client_addr,&client_addrlen);
@@ -133,11 +139,12 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE;
 
 
-    if ((rv = getaddrinfo("nunki.usc.edu", UDPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(SERVERNAME, UDPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
-    // loop through all the results and bind to the first we can
+    
+
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {
@@ -165,9 +172,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    //getpeername(sockfd,&client_addr,&client_addrlen);
-    //inet_ntop(client_addr.sa_family,get_in_addr(&client_addr),s, sizeof s);
-    //printf("The server D has received the network topology from the Client with UDP port number %u and IP address %s (Client's UDP port number and IP address) as follows:\n",(((struct sockaddr_in *)&client_addr)->sin_port),s);
     
     char t[INET6_ADDRSTRLEN];
     inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),t, sizeof t);

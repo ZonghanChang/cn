@@ -13,6 +13,10 @@
 #define CLIENTTCPPORT "25798"
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 #define MAXBUFLEN 100
+#define CLIENTNAME "nunki.usc.edu"
+#define SERVERNAME "nunki.usc.edu"
+#define FILEPATH "serverC.txt"
+
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -49,7 +53,7 @@ int main(int argc, char *argv[])
     // read file
     printf("The Server C has the following neighbor information:\n");
     printf("Neighbor----Cost\n");
-    if((fp = fopen("/home/scf-25/zonghanc/socket/serverC.txt", "r")) == NULL){
+    if((fp = fopen(FILEPATH, "r")) == NULL){
         printf("error");
         return 1;
     }
@@ -77,12 +81,12 @@ int main(int argc, char *argv[])
     }
     // read file end
 
-    if ((rv = getaddrinfo("nunki.usc.edu", CLIENTTCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(CLIENTNAME, CLIENTTCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
 
-    // loop through all the results and connect to the first we can
+
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {
@@ -104,13 +108,12 @@ int main(int argc, char *argv[])
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
               s, sizeof s);
-    //printf("client: connecting to %s\n", s);
+
     freeaddrinfo(servinfo); // all done with this structure
     if (send(sockfd, costArray, 30, 0) == -1){
         perror("send");
     }
 
-    //close(sockfd);
     struct sockaddr client_addr;
     socklen_t client_addrlen = sizeof client_addr;
     getpeername(sockfd,&client_addr,&client_addrlen);
@@ -122,7 +125,9 @@ int main(int argc, char *argv[])
     char l[INET6_ADDRSTRLEN];
     inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
     printf("For this connection with Client, the server C has TCP port number %u and IP address %s\n",ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
-    printf("\n"); 
+    printf("\n");
+
+
     // UDP
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -130,11 +135,12 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE;
 
 
-    if ((rv = getaddrinfo("nunki.usc.edu", UDPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(SERVERNAME, UDPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
-    // loop through all the results and bind to the first we can
+    
+    
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {

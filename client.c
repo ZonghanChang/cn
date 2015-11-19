@@ -17,7 +17,8 @@
 #define SERVERUDPPORTD "24798"
 #define BACKLOG 10   // how many pending connections queue will hold
 #define MAXDATASIZE 100
-
+#define CLIENTNAME "nunki.usc.edu"
+#define SERVERNAME "nunki.usc.edu"
 
 
 
@@ -132,7 +133,7 @@ int main(void)
     int udpData[16];
 
 
-    if ((rv = getaddrinfo("nunki.usc.edu", TCPPORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(CLIENTNAME, TCPPORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
 	}
@@ -237,6 +238,7 @@ int main(void)
     char server[INET6_ADDRSTRLEN];
     char *servers[4] = {SERVERUDPPORTA,SERVERUDPPORTB,SERVERUDPPORTC,SERVERUDPPORTD};
     for(i = 0;i < 4;i++){
+        sleep(1);
         int sockfd;
         struct addrinfo hints, *servinfo, *p;
         struct sockaddr local_addr;
@@ -248,7 +250,7 @@ int main(void)
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_DGRAM;
         hints.ai_flags = AI_PASSIVE; 
-        if ((rv = getaddrinfo("nunki.usc.edu", servers[i], &hints, &servinfo)) != 0) {
+        if ((rv = getaddrinfo(SERVERNAME, servers[i], &hints, &servinfo)) != 0) {
             fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
             return 1; }
         // loop through all the results and make a socket
@@ -279,7 +281,7 @@ int main(void)
         }
 
         getsockname(sockfd,&local_addr,&local_addrlen);
-        inet_ntop(p->ai_addr->sa_family,get_in_addr(p->ai_addr),l, sizeof l);
+        inet_ntop(local_addr.sa_family,get_in_addr(&local_addr),l, sizeof l);
         printf("For this connection with Server%c The Client has UDP port number %u and IP address %s.\n", 'A' + i, ntohs(((struct sockaddr_in *)&local_addr)->sin_port),l);
 
         printf("Edge----Cost\n");
@@ -291,6 +293,7 @@ int main(void)
         }
         printf("\n"); 
         freeaddrinfo(servinfo);
+        
     }
     
 
@@ -320,7 +323,7 @@ int main(void)
             }
         }
     }
-    printf("The Client has calculated a tree.The tree cost is %d\n",totalCost);
+    printf("The Client has calculated a tree.The tree cost is %d (cost of the tree):\n",totalCost);
     for(i=0;i<vertices;i++){
         for(j=0;j<vertices;j++){
             if(graph[i][j]!=-1){
